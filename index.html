@@ -19,22 +19,34 @@
             color: #fff;
             min-height: 100vh;
             font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
         }
 
         .glass-card {
             background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(15px);
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
         }
 
         .main-title {
-            font-size: 3.5rem;
+            font-size: 4rem;
+            font-weight: 300;
             background: linear-gradient(45deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
+            animation: float 3s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+            margin: 2rem 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
         }
 
         .upload-area {
@@ -42,11 +54,13 @@
             transition: all 0.3s ease;
             cursor: pointer;
             min-height: 300px;
+            background: rgba(255, 255, 255, 0.02);
         }
 
         .upload-area:hover {
             border-color: var(--primary);
             transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.1);
         }
 
         .preview-image {
@@ -58,20 +72,46 @@
         }
 
         .processing-bar {
-            height: 4px;
+            height: 8px;
             background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
             overflow: hidden;
-            margin: 20px 0;
+            margin: 30px 0;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
         }
 
         .processing-fill {
-            width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            animation: processing 2s infinite;
+            background: linear-gradient(90deg, 
+                rgba(0, 255, 136, 0.8),
+                rgba(0, 180, 216, 0.8));
+            width: 45%;
+            border-radius: 4px;
+            animation: processing 2s ease-in-out infinite;
+            position: relative;
+        }
+
+        .processing-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent);
+            animation: shine 1.5s ease-in-out infinite;
         }
 
         @keyframes processing {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(200%); }
+        }
+
+        @keyframes shine {
             0% { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
         }
@@ -91,6 +131,7 @@
             opacity: 0.8;
             animation: fadeIn 1s 1s forwards;
             opacity: 0;
+            z-index: 3;
         }
 
         @keyframes fadeIn {
@@ -113,11 +154,24 @@
             background: rgba(255, 0, 100, 0.2);
             border: 2px solid #ff0064;
         }
+
+        .progress-percent {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #00ff88;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body class="d-flex flex-column">
     <div class="container my-5">
-        <h1 class="main-title text-center mb-5">DeepFake Detection System</h1>
+        <header class="header text-center">
+            <h1 class="main-title">DeepFake Detector</h1>
+            <p class="text-muted">Advanced AI-powered image authenticity verification</p>
+        </header>
 
         <div class="glass-card p-5 mb-5">
             <div id="upload-section" class="text-center">
@@ -132,6 +186,7 @@
             <div id="processing-section" class="d-none">
                 <div class="processing-bar">
                     <div class="processing-fill"></div>
+                    <span class="progress-percent">45%</span>
                 </div>
                 <p class="text-center mb-0">Analyzing image...</p>
             </div>
@@ -177,30 +232,21 @@
         imageInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
-                // Show processing
                 uploadSection.classList.add('d-none');
                 processingSection.classList.remove('d-none');
                 resultSection.classList.add('d-none');
+                simulateProgress();
 
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    // Set original preview
                     const originalPreview = document.getElementById('originalPreview');
                     originalPreview.src = e.target.result;
 
-                    // Simulate processing delay
                     setTimeout(() => {
-                        // Set processed preview (same for simulation)
                         document.getElementById('processedPreview').src = e.target.result;
-                        
-                        // Show results
                         processingSection.classList.add('d-none');
                         resultSection.classList.remove('d-none');
-                        
-                        // Simulate mesh drawing
                         drawMesh();
-                        
-                        // Show result text
                         showResult();
                     }, 2500);
                 };
@@ -209,7 +255,6 @@
         });
 
         function drawMesh() {
-            // Simulate face mesh drawing on both canvases
             document.querySelectorAll('.mesh-overlay').forEach(canvas => {
                 const ctx = canvas.getContext('2d');
                 canvas.width = 500;
@@ -218,7 +263,6 @@
                 ctx.strokeStyle = '#00ff88';
                 ctx.lineWidth = 2;
                 
-                // Draw random mesh
                 for(let i = 0; i < 30; i++) {
                     ctx.beginPath();
                     ctx.moveTo(Math.random() * 500, Math.random() * 400);
@@ -229,7 +273,6 @@
         }
 
         function showResult() {
-            // Simulate API response
             const isReal = Math.random() > 0.5;
             resultText.innerHTML = `
                 <div class="${isReal ? 'real-badge' : 'fake-badge'} p-3 rounded-pill">
@@ -240,6 +283,36 @@
             resultText.style.opacity = '1';
             resultText.style.transform = 'translateY(0)';
         }
+
+        function simulateProgress() {
+            let percent = 0;
+            const counter = document.querySelector('.progress-percent');
+            const interval = setInterval(() => {
+                percent += Math.random() * 3;
+                if(percent >= 100) {
+                    percent = 100;
+                    clearInterval(interval);
+                }
+                counter.textContent = `${Math.min(100, Math.floor(percent))}%`;
+            }, 100);
+        }
+
+        // Drag and drop functionality
+        document.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            document.querySelector('.upload-area').style.borderColor = var(--primary);
+        });
+
+        document.addEventListener('dragleave', () => {
+            document.querySelector('.upload-area').style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        });
+
+        document.addEventListener('drop', (e) => {
+            e.preventDefault();
+            imageInput.files = e.dataTransfer.files;
+            const event = new Event('change');
+            imageInput.dispatchEvent(event);
+        });
     </script>
 </body>
 </html>
